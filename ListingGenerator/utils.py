@@ -36,7 +36,7 @@ def get_dates():
 
 def generate_param_list():
 
-    params = [(4, 32.0, 22034, 2042891, '1', '4'),(2, 24.0, 22034, 2042891, '5', '6'),(2, 24.0, 22034, 2042891, '7', '8')]
+    params = [(2, 32.0, 22034, 2042892, '3', '4'),(2, 24.0, 22034, 2042891, '1', '2'),(2, 24.0, 22034, 2042893, '3', '4')]
     result = []
     datetime_now, datetime_six_months = get_dates()
 
@@ -69,7 +69,9 @@ def bulk_insert_listing():
         except pyodbc.ProgrammingError:
             first_result = None        
         while cursor.nextset():
-            results.append(cursor.fetchall()[0][0])                
+            insert_id = cursor.fetchall()[0][0]
+            if insert_id != None:
+                results.append(insert_id)               
                 
         cnxn.commit()
         if not results or len(results) == 0:

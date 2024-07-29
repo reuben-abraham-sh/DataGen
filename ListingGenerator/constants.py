@@ -2,7 +2,7 @@ QA_VGG_CONNECTION_STRING = "Driver={ODBC Driver 18 for SQL Server};Server=qa.via
 
 #ComplianceBitmask,
 
-LISTING_INSERT_QUERY_BULK = """INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
+LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
                          SellerAffiliateID, AvailableTickets, \
                          OriginalAvailableTickets, SplitID, Section, SeatFrom, SeatTo, \
