@@ -10,10 +10,10 @@ LISTING_INSERT_QUERY_BULK = """INSERT INTO dbo.Listing (ListingTypeID, EventID, 
                          ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
                             TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
                          FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
-                        InternalHoldStateID, IsFromStubHub) \
+                        InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
                         OUTPUT Inserted.ListingID
 values \
-    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
 
 LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
@@ -23,9 +23,9 @@ LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, 
                          ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
                             TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
                          FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
-                        InternalHoldStateID, IsFromStubHub) \
+                        InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
 values \
-    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
 
 LISTING_TYPE_ID = 1
 EVENT_ID = 152168498
@@ -53,3 +53,4 @@ INTERNAL_HOLD_STATE_ID = 0
 IS_FROM_SH = 0
 # Adding a placeholder section since the mapping is done via the RowId on the listing
 SECTION = '100'
+IS_PREUPLOADED = 1

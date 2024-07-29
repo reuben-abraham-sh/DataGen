@@ -36,7 +36,7 @@ def get_dates():
 
 def generate_param_list():
 
-    params = [(4, 32.0, 22034, 2042891, '1', '4'),(2, 24.0, 22034, 2042891, '5', '6')]
+    params = [(4, 32.0, 22034, 2042891, '1', '4'),(2, 24.0, 22034, 2042891, '5', '6'),(2, 24.0, 22034, 2042891, '7', '8')]
     result = []
     datetime_now, datetime_six_months = get_dates()
 
@@ -47,31 +47,32 @@ def generate_param_list():
             constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
             price, constants.LISTING_FEE_CLASS_ID, price - 1, tc, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
             constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row, constants.CLIENT_APPLICATION_ID,
-            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH
+            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
         ))
 
     return result
 
+
 def bulk_insert_listing():
 
     params = generate_param_list()
-    print(params)
     try:
         cnxn = pyodbc.connect(constants.QA_VGG_CONNECTION_STRING)
         cursor = cnxn.cursor()  
-        #cursor.fast_executemany = True
-        cursor.executemany(constants.LISTING_INSERT_QUERY_BULK, params)
-        #print("CURSOR DESC: ", cursor.description)
-        #columns = [column[0] for column in cursor.description]
-        #print("COLS:", columns)
+        cursor.fast_executemany = True
+        cursor.executemany(constants.LISTING_INSERT_QUERY_BULK, params)        
 
-        results = cursor.fetchall()
+        results = []
 
-        # response = []
-        # for row in results:
-        #     response.append(dict(zip(columns, row)))
+        try:
+            first_result = cursor.fetchall()
+        except pyodbc.ProgrammingError:
+            first_result = None        
+        while cursor.nextset():
+            results.append(cursor.fetchall()[0][0])                
+                
         cnxn.commit()
-        if not results:
+        if not results or len(results) == 0:
             return None
 
         return results
@@ -98,7 +99,7 @@ def insert_single_listing(available_tickets, price, ticket_class_id, row_id, sea
             constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
             price, constants.LISTING_FEE_CLASS_ID, price - 1, ticket_class_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
             constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
-            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH
+            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
         ))
         
         inserted_id = cursor.fetchone()[0]  
