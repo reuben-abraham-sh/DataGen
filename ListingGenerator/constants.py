@@ -2,6 +2,19 @@ QA_VGG_CONNECTION_STRING = "Driver={ODBC Driver 18 for SQL Server};Server=qa.via
 
 #ComplianceBitmask,
 
+LISTING_INSERT_QUERY_BULK = """INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
+                         TicketLocationAddressID, GuaranteePaymentMethodID, \
+                         SellerAffiliateID, AvailableTickets, \
+                         OriginalAvailableTickets, SplitID, Section, SeatFrom, SeatTo, \
+                         CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
+                         ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
+                            TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
+                         FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
+                        InternalHoldStateID, IsFromStubHub) \
+                        OUTPUT Inserted.ListingID
+values \
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+
 LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
                          SellerAffiliateID, AvailableTickets, \
@@ -38,3 +51,5 @@ APPLICATION_AUDIT = 'Viagogo Supply Compliance Service QA'
 COMPLIANCE_BIT_MASK = '0xE7DEFFFF'
 INTERNAL_HOLD_STATE_ID = 0
 IS_FROM_SH = 0
+# Adding a placeholder section since the mapping is done via the RowId on the listing
+SECTION = '100'

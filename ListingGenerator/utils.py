@@ -34,8 +34,58 @@ def get_dates():
     now_plus_six_m = now + datetime.timedelta(days = 90)
     return (now.strftime("%Y-%m-%d %H:%M:%S"), now_plus_six_m.strftime("%Y-%m-%d %H:%M:%S"))
 
+def generate_param_list():
 
-def insert_qa_listing(available_tickets, price, ticket_class_id, section_id, row_id, seat_from, seat_to):
+    params = [(4, 32.0, 22034, 2042891, '1', '4'),(2, 24.0, 22034, 2042891, '5', '6')]
+    result = []
+    datetime_now, datetime_six_months = get_dates()
+
+    for av_tix, price, tc, row, sf, st in params:
+        result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
+            constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
+            av_tix, av_tix, constants.SPLIT_ID, constants.SECTION, sf, st, constants.CURRENCY_CODE,
+            constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
+            price, constants.LISTING_FEE_CLASS_ID, price - 1, tc, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
+            constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row, constants.CLIENT_APPLICATION_ID,
+            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH
+        ))
+
+    return result
+
+def bulk_insert_listing():
+
+    params = generate_param_list()
+    print(params)
+    try:
+        cnxn = pyodbc.connect(constants.QA_VGG_CONNECTION_STRING)
+        cursor = cnxn.cursor()  
+        #cursor.fast_executemany = True
+        cursor.executemany(constants.LISTING_INSERT_QUERY_BULK, params)
+        #print("CURSOR DESC: ", cursor.description)
+        #columns = [column[0] for column in cursor.description]
+        #print("COLS:", columns)
+
+        results = cursor.fetchall()
+
+        # response = []
+        # for row in results:
+        #     response.append(dict(zip(columns, row)))
+        cnxn.commit()
+        if not results:
+            return None
+
+        return results
+
+    except Exception as e:
+        print("Error:", e)
+        cnxn.rollback()
+        return None
+    finally:
+        cursor.close()
+        cnxn.close() 
+
+
+def insert_single_listing(available_tickets, price, ticket_class_id, row_id, seat_from, seat_to):
     try:
         datetime_now, datetime_six_months = get_dates()
 
@@ -44,7 +94,7 @@ def insert_qa_listing(available_tickets, price, ticket_class_id, section_id, row
 
         cursor.execute(constants.LISTING_INSERT_QUERY, (constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
             constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-            available_tickets, available_tickets, constants.SPLIT_ID, section_id, seat_from, seat_to, constants.CURRENCY_CODE,
+            available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, seat_from, seat_to, constants.CURRENCY_CODE,
             constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
             price, constants.LISTING_FEE_CLASS_ID, price - 1, ticket_class_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
             constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
