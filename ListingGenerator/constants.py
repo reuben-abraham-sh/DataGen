@@ -1,6 +1,5 @@
 QA_VGG_CONNECTION_STRING = "Driver={ODBC Driver 18 for SQL Server};Server=qa.viagogo.sql.viagogo.corp;Database=viagogo;Trusted_Connection=yes;TrustServerCertificate=yes; "
-
-#ComplianceBitmask,
+BIGGEST_SEAT_CHUNK_SIZE = 10
 
 LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \

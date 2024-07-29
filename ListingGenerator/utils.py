@@ -3,6 +3,7 @@ import constants
 import datetime
 from tqdm import tqdm
 from collections import defaultdict
+import random
 
 def get_sorted_manifest_tuple(filename):
     result = []
@@ -47,12 +48,44 @@ def get_dates():
     now_plus_six_m = now + datetime.timedelta(days = 90)
     return (now.strftime("%Y-%m-%d %H:%M:%S"), now_plus_six_m.strftime("%Y-%m-%d %H:%M:%S"))
 
-def generate_param_list():
+def weighted_random_choice(n):
+    weights = [1/(i+1) for i in range(n)]
+    total = sum(weights)
+    probabilities = [w / total for w in weights]
+    return random.choices(range(1, n+1), probabilities)[0]
 
-    params = [(2, 32.0, 22034, 2042892, '3', '4'),(2, 24.0, 22034, 2042891, '1', '2'),(2, 24.0, 22034, 2042893, '3', '4')]
+def chunk_seats(seats):
+    sorted_seats = sorted(seats)
+    start, end = sorted_seats[0], sorted_seats[-1]
+
+    if start < 0 or len(sorted_seats) != (end - start + 1):
+        return None
+    
+    chunks = []
+    total_seats_remaining = len(sorted_seats)    
+
+    while total_seats_remaining > 0:
+        chunk = weighted_random_choice(min(constants.BIGGEST_SEAT_CHUNK_SIZE, total_seats_remaining))
+        chunks.append((start, start+chunk-1))
+        start = start + chunk
+        total_seats_remaining -= chunk
+
+    return chunks
+
+def generate_sql_param_list(parsed_data):
+
     result = []
-    datetime_now, datetime_six_months = get_dates()
+    datetime_now, datetime_six_months = get_dates()    
+    for key, seats in parsed_data.items():
+        
+        chunked_seats = chunk_seats(seats)
+        if chunked_seats == None:
+            print(f"Anomaly: Key:{key} -- Seats:{seats}")
+        
+        #print(f"Key:{key} -- S:{seats} -- C: {chunked_seats}")
+        #params = [(2, 32.0, 22034, 2042892, '3', '4'),(2, 24.0, 22034, 2042891, '1', '2'),(2, 24.0, 22034, 2042893, '3', '4')]    
 
+    '''
     for av_tix, price, tc, row, sf, st in params:
         result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
             constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
@@ -64,6 +97,7 @@ def generate_param_list():
         ))
 
     return result
+    '''
 
 
 def bulk_insert_listing():
