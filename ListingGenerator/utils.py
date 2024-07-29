@@ -1,17 +1,30 @@
 import pyodbc
 import constants
 import datetime
+from tqdm import tqdm
+from collections import defaultdict
 
 def get_sorted_manifest_tuple(filename):
     result = []
+    non_seat_lvl_counter = 0
+    hash_dict = defaultdict(set)
     with open(filename) as file:
         counter = 0
-        for line in file:
-            result.append(tuple([int(x) for x in line.strip().split('_')]))
-            counter += 1
-            if counter == 10:
-                break
-    return sorted(result)
+        for line in tqdm(file):
+            formatted_line_list = line.strip().split('_')
+            if len(formatted_line_list) == 4:
+                # seat level manifest entries
+                seat = int(formatted_line_list[-1])
+                key = "_".join(formatted_line_list[:-1])
+                hash_dict[key].add(seat)
+                counter += 1
+            else:
+                non_seat_lvl_counter += 1 # instead, log it in another file.
+
+    print("Seat level counter: ", counter)
+    print("Non seat level counter", non_seat_lvl_counter)
+
+    return hash_dict
 
 def fetch_from_qa():
  
