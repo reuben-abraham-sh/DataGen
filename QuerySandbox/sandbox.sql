@@ -72,3 +72,17 @@ from viagogo.dbo.Listing where EventID = 152168498;
 
 select *
 from viagogo.dbo.Address where AddressID = 72738
+
+
+-------------- tracking ticketclass, section, row info -
+-- when testing out for a single section/ticketclass do this one: ticketclassId = 17014
+select *
+from viagogo.dbo.Event
+where VenueConfigID = 582276 and EventDateTime > getutcdate();
+
+select top 10 *
+from viagogo.Venue.TicketClass where TicketClassId = 17014;
+
+select top 10 SectionID, VenueID, InternalName, LegacyMapName, ContentBody
+from viagogo.Venue.Section join dbo.ContentText on ContentID = NameContentID and LCID = 2057
+where SectionID in (755968, 755934, 755935);
