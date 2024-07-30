@@ -95,7 +95,7 @@ def chunk_seats(seats):
         total_seats_remaining = len(group)
 
         while total_seats_remaining > 0:
-            chunk = weighted_random_choice(min(constants.BIGGEST_SEAT_CHUNK_SIZE, total_seats_remaining))
+            chunk = weighted_random_number(min(constants.BIGGEST_SEAT_CHUNK_SIZE, total_seats_remaining))
             chunks.append((start, start+chunk-1))
             start = start + chunk
             total_seats_remaining -= chunk
@@ -103,11 +103,15 @@ def chunk_seats(seats):
     return chunks
 
 
-def generate_sql_param_list(parsed_data):
+def generate_sql_param_list(seat_lvl, standing_row_lvl):
 
-    result = []
+    seat_result = []
+    standing_row_result = []
     datetime_now, datetime_six_months = get_dates()    
-    for key, seats in parsed_data.items():
+    
+    # dealing with seat level
+    '''
+    for key, seats in seat_lvl.items():
 
         if key.startswith("1754_445551_699519"):        
         
@@ -126,16 +130,37 @@ def generate_sql_param_list(parsed_data):
             for seat_from, seat_to in chunked_seats:
 
                 available_tickets = seat_to - seat_from + 1
-                result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
+                seat_result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
                     constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
                     available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, str(seat_from), str(seat_to), constants.CURRENCY_CODE,
                     constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
                     price, constants.LISTING_FEE_CLASS_ID, price - 1, ticketclass_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
                     constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
                     constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
-                ))                    
+                )) 
+    '''
+    
+    # dealing with standing row level
+    for standing_row in standing_row_lvl:
+
+        # right now, just a single listing on standing row sections
+        standing_row_split = standing_row.split("_")
+        ticketclass_id = int(standing_row_split[0])
+        row_id = int(standing_row_split[-1])
+        price = random.uniform(1, 50) # setting same price for all listings of this row for now
+        available_tickets = weighted_random_number(10)
+
+        standing_row_result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
+            constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
+            available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, constants.CURRENCY_CODE,
+            constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
+            price, constants.LISTING_FEE_CLASS_ID, price - 1, ticketclass_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
+            constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
+        ))
+
         
-    return result
+    return seat_result, standing_row_result
 
 
 def bulk_insert_listing(params):
