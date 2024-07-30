@@ -43,10 +43,10 @@ def fetch_from_qa():
 
 
 def get_dates():
-
     now = datetime.datetime.now()    
     now_plus_six_m = now + datetime.timedelta(days = 90)
     return (now.strftime("%Y-%m-%d %H:%M:%S"), now_plus_six_m.strftime("%Y-%m-%d %H:%M:%S"))
+
 
 def weighted_random_choice(n):
     weights = [1/(i+1) for i in range(n)]
@@ -54,36 +54,56 @@ def weighted_random_choice(n):
     probabilities = [w / total for w in weights]
     return random.choices(range(1, n+1), probabilities)[0]
 
-def chunk_seats(seats):
-    sorted_seats = sorted(seats)
-    start, end = sorted_seats[0], sorted_seats[-1]
 
-    if start < 0 or len(sorted_seats) != (end - start + 1):
-        return None
-    
+def group_continuous_numbers(sorted_seats):
+    result = []
+    current_group = [sorted_seats[0]]
+
+    for i in range(1, len(sorted_seats)):
+        if sorted_seats[i] == sorted_seats[i - 1] + 1:
+            current_group.append(sorted_seats[i])
+        else:
+            result.append(current_group)
+            current_group = [sorted_seats[i]]
+
+    result.append(current_group)
+    return result
+
+
+def chunk_seats(seats):    
     chunks = []
-    total_seats_remaining = len(sorted_seats)    
+    sorted_seats = sorted(seats)    
+    groups = group_continuous_numbers(sorted_seats)
 
-    while total_seats_remaining > 0:
-        chunk = weighted_random_choice(min(constants.BIGGEST_SEAT_CHUNK_SIZE, total_seats_remaining))
-        chunks.append((start, start+chunk-1))
-        start = start + chunk
-        total_seats_remaining -= chunk
+    for group in groups:
+
+        start, end = group[0], group[-1]
+        if start < 0 or len(group) != (end - start + 1):
+            return None
+        
+        total_seats_remaining = len(group)
+
+        while total_seats_remaining > 0:
+            chunk = weighted_random_choice(min(constants.BIGGEST_SEAT_CHUNK_SIZE, total_seats_remaining))
+            chunks.append((start, start+chunk-1))
+            start = start + chunk
+            total_seats_remaining -= chunk
 
     return chunks
+
 
 def generate_sql_param_list(parsed_data):
 
     result = []
     datetime_now, datetime_six_months = get_dates()    
     for key, seats in parsed_data.items():
-        
+                
         chunked_seats = chunk_seats(seats)
         if chunked_seats == None:
             print(f"Anomaly: Key:{key} -- Seats:{seats}")
         
-        #print(f"Key:{key} -- S:{seats} -- C: {chunked_seats}")
-        #params = [(2, 32.0, 22034, 2042892, '3', '4'),(2, 24.0, 22034, 2042891, '1', '2'),(2, 24.0, 22034, 2042893, '3', '4')]    
+        print(f"Key:{key} \nSeats:{seats} \nChunks:{chunked_seats}")
+        print("\n")               
 
     '''
     for av_tix, price, tc, row, sf, st in params:
