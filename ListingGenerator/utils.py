@@ -97,32 +97,38 @@ def generate_sql_param_list(parsed_data):
     result = []
     datetime_now, datetime_six_months = get_dates()    
     for key, seats in parsed_data.items():
-                
-        chunked_seats = chunk_seats(seats)
-        if chunked_seats == None:
-            print(f"Anomaly: Key:{key} -- Seats:{seats}")
+
+        if key.startswith("1754_445551_699519"):        
         
-        print(f"Key:{key} \nSeats:{seats} \nChunks:{chunked_seats}")
-        print("\n")               
+            chunked_seats = chunk_seats(seats)
+            if chunked_seats == None:
+                print(f"Anomaly: Key:{key} -- Seats:{seats}")
+            
+            print(f"Key:{key} \nSeats:{seats} \nChunks:{chunked_seats}")
+            print("\n")               
 
-    '''
-    for av_tix, price, tc, row, sf, st in params:
-        result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
-            constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-            av_tix, av_tix, constants.SPLIT_ID, constants.SECTION, sf, st, constants.CURRENCY_CODE,
-            constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
-            price, constants.LISTING_FEE_CLASS_ID, price - 1, tc, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
-            constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row, constants.CLIENT_APPLICATION_ID,
-            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
-        ))
+            key_split = key.split("_")
+            ticketclass_id = int(key_split[0])
+            row_id = int(key_split[-1])
+            price = random.uniform(1, 50) # setting same price for all listings of this row for now
 
+            for seat_from, seat_to in chunked_seats:
+
+                available_tickets = seat_to - seat_from + 1
+                result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
+                    constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
+                    available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, str(seat_from), str(seat_to), constants.CURRENCY_CODE,
+                    constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
+                    price, constants.LISTING_FEE_CLASS_ID, price - 1, ticketclass_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
+                    constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+                    constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
+                ))                    
+        
     return result
-    '''
 
 
-def bulk_insert_listing():
-
-    params = generate_param_list()
+def bulk_insert_listing(params):
+    
     try:
         cnxn = pyodbc.connect(constants.QA_VGG_CONNECTION_STRING)
         cursor = cnxn.cursor()  
@@ -162,14 +168,26 @@ def insert_single_listing(available_tickets, price, ticket_class_id, row_id, sea
         cnxn = pyodbc.connect(constants.QA_VGG_CONNECTION_STRING)
         cursor = cnxn.cursor()
 
-        cursor.execute(constants.LISTING_INSERT_QUERY, (constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
-            constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-            available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, seat_from, seat_to, constants.CURRENCY_CODE,
-            constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
-            price, constants.LISTING_FEE_CLASS_ID, price - 1, ticket_class_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
-            constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
-            constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
-        ))
+        if seat_from == None and seat_to == None:
+            # standing row
+            cursor.execute(constants.STANDING_ROW_LISTING_INSERT_QUERY, (constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
+                constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
+                available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, constants.CURRENCY_CODE,
+                constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
+                price, constants.LISTING_FEE_CLASS_ID, price - 1, ticket_class_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
+                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+                constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
+            ))
+        else:
+            # regular listing
+            cursor.execute(constants.LISTING_INSERT_QUERY, (constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
+                constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
+                available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, seat_from, seat_to, constants.CURRENCY_CODE,
+                constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
+                price, constants.LISTING_FEE_CLASS_ID, price - 1, ticket_class_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
+                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+                constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
+            ))
         
         inserted_id = cursor.fetchone()[0]  
         cnxn.commit()                     

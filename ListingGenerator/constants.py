@@ -26,8 +26,21 @@ LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, 
 values \
     (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
 
+STANDING_ROW_LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
+                         TicketLocationAddressID, GuaranteePaymentMethodID, \
+                         SellerAffiliateID, AvailableTickets, \
+                         OriginalAvailableTickets, SplitID, Section, \
+                         CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
+                         ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
+                            TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
+                         FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
+                        InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
+values \
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
+
+
 LISTING_TYPE_ID = 1
-EVENT_ID = 152168498
+EVENT_ID = 154249855
 USER_ID = '93E29545-A45D-4667-81AF-0DFE82A4CA4C'
 TICKET_LOCATION_ADDRESS_ID = 72738
 GUARANTEE_PAYMENT_METHOD_ID = 151620

@@ -5,9 +5,12 @@ from collections import defaultdict
 
 if __name__ == "__main__":
     
-    parsed_data = utils.get_sorted_manifest_tuple("manifest.txt")
-    params_list = utils.generate_sql_param_list(parsed_data)
-    #listing_id = utils.insert_single_listing(4, 32.0, 22034, 2042891, '1', '4')
-    #results = utils.bulk_insert_listing()
-    #print("RESULTS: ", results)
+    # remember to change the EVENTID in the constants file.
+    #parsed_data = utils.get_sorted_manifest_tuple("manifest_yankees.txt")
+    #params_list = utils.generate_sql_param_list(parsed_data)   
+    #print(params_list)
+    listing_id = utils.insert_single_listing(10, 32.0, 4109, 701325, None, None)
+    print("ListingId ",listing_id)
+    #results = utils.bulk_insert_listing(params_list)
+    print("RESULTS: ", results)
     
