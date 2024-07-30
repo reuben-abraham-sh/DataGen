@@ -48,6 +48,11 @@ def get_dates():
     return (now.strftime("%Y-%m-%d %H:%M:%S"), now_plus_six_m.strftime("%Y-%m-%d %H:%M:%S"))
 
 
+def weighted_random_number(n):
+    numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    weights = [1, 32, 15, 17, 5, 7, 4, 4, 3, 3] # Distribution mocked from Yankees v Angels at Yankee Stadium
+    return random.choices(numbers, weights=weights, k=1)[0]
+
 def weighted_random_choice(n):
     weights = [1/(i+1) for i in range(n)]
     total = sum(weights)
