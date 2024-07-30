@@ -7,25 +7,31 @@ import random
 
 def get_sorted_manifest_tuple(filename):
     result = []
-    non_seat_lvl_counter = 0
-    hash_dict = defaultdict(set)
-    with open(filename) as file:
-        counter = 0
+    unaccounted_counter = 0
+    seat_lvl_counter = 0
+    seat_lvl_dict = defaultdict(set)
+    standing_rows = set()
+    with open(filename) as file:        
         for line in tqdm(file):
             formatted_line_list = line.strip().split('_')
             if len(formatted_line_list) == 4:
                 # seat level manifest entries
                 seat = int(formatted_line_list[-1])
                 key = "_".join(formatted_line_list[:-1])
-                hash_dict[key].add(seat)
-                counter += 1
+                seat_lvl_dict[key].add(seat)
+                seat_lvl_counter += 1
+            elif len(formatted_line_list) == 3:
+                # standing rows
+                standing_row = "_".join(formatted_line_list)
+                standing_rows.add(standing_row)
             else:
-                non_seat_lvl_counter += 1 # instead, log it in another file.
+                unaccounted_counter += 1 # instead, log it in another file.
 
-    print("Seat level counter: ", counter)
-    print("Non seat level counter", non_seat_lvl_counter)
+    print("Seat level counter: ", seat_lvl_counter)
+    print("Standing row counter: ", len(standing_rows))
+    print("Unaccounted for: ", unaccounted_counter)
 
-    return hash_dict
+    return seat_lvl_dict, standing_rows
 
 def fetch_from_qa():
  

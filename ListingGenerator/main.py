@@ -6,7 +6,8 @@ from collections import defaultdict
 if __name__ == "__main__":
     
     # remember to change the EVENTID in the constants file.
-    #parsed_data = utils.get_sorted_manifest_tuple("manifest_yankees.txt")
+    seat_lvl, standing_row_lvl = utils.get_sorted_manifest_tuple("manifest_yankees.txt")
+    print(standing_row_lvl)
     #params_list = utils.generate_sql_param_list(parsed_data)   
     #print(params_list)
 
