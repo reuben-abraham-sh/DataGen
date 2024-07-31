@@ -22,7 +22,7 @@ def get_sorted_manifest_tuple(filename):
                 seat_lvl_counter += 1
             elif len(formatted_line_list) == 3:
                 # standing rows
-                standing_row = "_".join(formatted_line_list)
+                standing_row = "_".join(formatted_line_list)                
                 standing_rows.add(standing_row)
             else:
                 unaccounted_counter += 1 # instead, log it in another file.
@@ -56,8 +56,8 @@ def get_dates():
 
 def weighted_random_number(n):
     numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    weights = [1, 32, 15, 17, 5, 7, 4, 4, 3, 3] # Distribution mocked from Yankees v Angels at Yankee Stadium
-    return random.choices(numbers, weights=weights, k=1)[0]
+    weights = [1, 15, 32, 17, 5, 7, 4, 4, 3, 3]
+    return random.choices(numbers[:n], weights=weights[:n], k=1)[0]
 
 def weighted_random_choice(n):
     weights = [1/(i+1) for i in range(n)]
@@ -109,40 +109,34 @@ def generate_sql_param_list(seat_lvl, standing_row_lvl):
     standing_row_result = []
     datetime_now, datetime_six_months = get_dates()    
     
-    # dealing with seat level
-    '''
-    for key, seats in seat_lvl.items():
-
-        if key.startswith("1754_445551_699519"):        
+    # dealing with seat level    
+    for key, seats in seat_lvl.items():        
+        chunked_seats = chunk_seats(seats)
+        if chunked_seats == None:
+            print(f"Anomaly: Key:{key} -- Seats:{seats}")
         
-            chunked_seats = chunk_seats(seats)
-            if chunked_seats == None:
-                print(f"Anomaly: Key:{key} -- Seats:{seats}")
-            
-            print(f"Key:{key} \nSeats:{seats} \nChunks:{chunked_seats}")
-            print("\n")               
+        #print(f"Key:{key} \nSeats:{seats} \nChunks:{chunked_seats}")
+        #print("\n")               
 
-            key_split = key.split("_")
-            ticketclass_id = int(key_split[0])
-            row_id = int(key_split[-1])
-            price = random.uniform(1, 50) # setting same price for all listings of this row for now
+        key_split = key.split("_")
+        ticketclass_id = int(key_split[0])
+        row_id = int(key_split[-1])
+        price = random.uniform(1, 50) # setting same price for all listings of this row for now
 
-            for seat_from, seat_to in chunked_seats:
+        for seat_from, seat_to in chunked_seats:
 
-                available_tickets = seat_to - seat_from + 1
-                seat_result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
-                    constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-                    available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, str(seat_from), str(seat_to), constants.CURRENCY_CODE,
-                    constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
-                    price, constants.LISTING_FEE_CLASS_ID, price - 1, ticketclass_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
-                    constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
-                    constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
-                )) 
-    '''
-    
+            available_tickets = seat_to - seat_from + 1
+            seat_result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
+                constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
+                available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, str(seat_from), str(seat_to), constants.CURRENCY_CODE,
+                constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
+                price, constants.LISTING_FEE_CLASS_ID, price - 1, ticketclass_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
+                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+                constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
+            ))     
+
     # dealing with standing row level
-    for standing_row in standing_row_lvl:
-
+    for standing_row in standing_row_lvl:        
         # right now, just a single listing on standing row sections
         standing_row_split = standing_row.split("_")
         ticketclass_id = int(standing_row_split[0])
@@ -158,18 +152,20 @@ def generate_sql_param_list(seat_lvl, standing_row_lvl):
             constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
             constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
         ))
-
         
     return seat_result, standing_row_result
 
 
-def bulk_insert_listing(params):
+def bulk_insert_listing_helper(params, query):
     
+    if params == None or len(params) == 0:
+        return []
+
     try:
         cnxn = pyodbc.connect(constants.QA_VGG_CONNECTION_STRING)
         cursor = cnxn.cursor()  
         cursor.fast_executemany = True
-        cursor.executemany(constants.LISTING_INSERT_QUERY_BULK, params)        
+        cursor.executemany(query, params)        
 
         results = []
 
@@ -196,6 +192,29 @@ def bulk_insert_listing(params):
         cursor.close()
         cnxn.close() 
 
+
+def batch_params(elements, batch_size=250):
+    for i in range(0, len(elements), batch_size):
+        yield elements[i:i + batch_size]
+
+
+def bulk_insert_listing(seat_lvl_param_list, standing_row_lvl_param_list):  
+    #in the future, add batching logic in here esp for seat-lvl
+
+    total_seat_level_listing_ids = []
+    batches = list(batch_params(seat_lvl_param_list))    
+    #batches = batches[:3]
+
+    for idx, batch in tqdm(enumerate(batches)):
+        print(f"Running Batch {idx} : {len(batch)} Inserts")
+        seat_lvl_results = bulk_insert_listing_helper(batch, constants.SEAT_LEVEL_LISTING_INSERT_QUERY_BULK)
+        total_seat_level_listing_ids.extend(seat_lvl_results)
+
+    # No need for batching here
+    standing_row_results = bulk_insert_listing_helper(standing_row_lvl_param_list, constants.STANDING_ROW_LISTING_INSERT_QUERY_BULK)
+    
+    return total_seat_level_listing_ids, standing_row_results
+    
 
 def insert_single_listing(available_tickets, price, ticket_class_id, row_id, seat_from, seat_to):
     try:

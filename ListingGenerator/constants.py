@@ -1,7 +1,7 @@
 QA_VGG_CONNECTION_STRING = "Driver={ODBC Driver 18 for SQL Server};Server=qa.viagogo.sql.viagogo.corp;Database=viagogo;Trusted_Connection=yes;TrustServerCertificate=yes; "
 BIGGEST_SEAT_CHUNK_SIZE = 10
 
-LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
+SEAT_LEVEL_LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
                          SellerAffiliateID, AvailableTickets, \
                          OriginalAvailableTickets, SplitID, Section, SeatFrom, SeatTo, \
@@ -14,13 +14,26 @@ LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (ListingType
 values \
     (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
 
+STANDING_ROW_LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
+                         TicketLocationAddressID, GuaranteePaymentMethodID, \
+                         SellerAffiliateID, AvailableTickets, \
+                         OriginalAvailableTickets, SplitID, Section, \
+                         CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
+                         ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
+                            TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
+                         FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
+                        InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
+                        OUTPUT Inserted.ListingID
+values \
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+
 LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
                          SellerAffiliateID, AvailableTickets, \
                          OriginalAvailableTickets, SplitID, Section, SeatFrom, SeatTo, \
                          CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
                          ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
-                            TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
+                         TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
                          FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
                         InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
 values \
@@ -40,7 +53,7 @@ values \
 
 
 LISTING_TYPE_ID = 1
-EVENT_ID = 154249855
+EVENT_ID = 152864707
 USER_ID = '93E29545-A45D-4667-81AF-0DFE82A4CA4C'
 TICKET_LOCATION_ADDRESS_ID = 72738
 GUARANTEE_PAYMENT_METHOD_ID = 151620
