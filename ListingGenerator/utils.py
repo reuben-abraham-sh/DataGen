@@ -103,24 +103,30 @@ def chunk_seats(seats):
     return chunks
 
 
-def generate_sql_param_list(seat_lvl, standing_row_lvl):
+def generate_sql_param_list(seat_lvl, standing_row_lvl, row_and_section_data):
 
     seat_result = []
     standing_row_result = []
-    datetime_now, datetime_six_months = get_dates()    
+    datetime_now, datetime_six_months = get_dates()
+    row_section_metadata_keys = row_and_section_data.keys()
+    rows_without_metadata, standing_rows_without_metadata = 0, 0
     
     # dealing with seat level    
     for key, seats in seat_lvl.items():        
         chunked_seats = chunk_seats(seats)
         if chunked_seats == None:
-            print(f"Anomaly: Key:{key} -- Seats:{seats}")
-        
-        #print(f"Key:{key} \nSeats:{seats} \nChunks:{chunked_seats}")
-        #print("\n")               
+            print(f"Anomaly: Key:{key} -- Seats:{seats}")            
 
         key_split = key.split("_")
         ticketclass_id = int(key_split[0])
         row_id = int(key_split[-1])
+        row_name, section_name = None, constants.SECTION #default values
+        if row_id in row_section_metadata_keys:
+            row_name, section_name = row_and_section_data[row_id]
+        else:
+            rows_without_metadata += 1
+            #print(row_id)
+
         price = random.uniform(1, 50) # setting same price for all listings of this row for now
 
         for seat_from, seat_to in chunked_seats:
@@ -128,10 +134,10 @@ def generate_sql_param_list(seat_lvl, standing_row_lvl):
             available_tickets = seat_to - seat_from + 1
             seat_result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
                 constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-                available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, str(seat_from), str(seat_to), constants.CURRENCY_CODE,
+                available_tickets, available_tickets, constants.SPLIT_ID, section_name, str(seat_from), str(seat_to), constants.CURRENCY_CODE,
                 constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
                 price, constants.LISTING_FEE_CLASS_ID, price - 1, ticketclass_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
-                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, row_name, constants.CLIENT_APPLICATION_ID,
                 constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
             ))     
 
@@ -141,18 +147,27 @@ def generate_sql_param_list(seat_lvl, standing_row_lvl):
         standing_row_split = standing_row.split("_")
         ticketclass_id = int(standing_row_split[0])
         row_id = int(standing_row_split[-1])
+        row_name, section_name = None, constants.SECTION #default values
+        if row_id in row_section_metadata_keys:
+            row_name, section_name = row_and_section_data[row_id]
+        else:
+            standing_rows_without_metadata += 1
+
         price = random.uniform(1, 50) # setting same price for all listings of this row for now
         available_tickets = weighted_random_number(10)
 
         standing_row_result.append((constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
             constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-            available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, constants.CURRENCY_CODE,
+            available_tickets, available_tickets, constants.SPLIT_ID, section_name, constants.CURRENCY_CODE,
             constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
             price, constants.LISTING_FEE_CLASS_ID, price - 1, ticketclass_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
-            constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+            constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, row_name, constants.CLIENT_APPLICATION_ID,
             constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
         ))
         
+    print("Rows without metadata: ", rows_without_metadata)
+    print("Standing rows without metadata: ", standing_rows_without_metadata)
+
     return seat_result, standing_row_result
 
 
@@ -216,7 +231,7 @@ def bulk_insert_listing(seat_lvl_param_list, standing_row_lvl_param_list):
     return total_seat_level_listing_ids, standing_row_results
     
 
-def insert_single_listing(available_tickets, price, ticket_class_id, row_id, seat_from, seat_to):
+def insert_single_listing(available_tickets, price, ticket_class_id, row_id, row_name, section_name, seat_from, seat_to):
     try:
         datetime_now, datetime_six_months = get_dates()
 
@@ -227,20 +242,20 @@ def insert_single_listing(available_tickets, price, ticket_class_id, row_id, sea
             # standing row
             cursor.execute(constants.STANDING_ROW_LISTING_INSERT_QUERY, (constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
                 constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-                available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, constants.CURRENCY_CODE,
+                available_tickets, available_tickets, constants.SPLIT_ID, section_name, constants.CURRENCY_CODE,
                 constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
                 price, constants.LISTING_FEE_CLASS_ID, price - 1, ticket_class_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
-                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, row_name, constants.CLIENT_APPLICATION_ID,
                 constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
             ))
         else:
             # regular listing
             cursor.execute(constants.LISTING_INSERT_QUERY, (constants.LISTING_TYPE_ID, constants.EVENT_ID, constants.USER_ID,
                 constants.TICKET_LOCATION_ADDRESS_ID, constants.GUARANTEE_PAYMENT_METHOD_ID, constants.SELLER_AFFILIATE_ID,
-                available_tickets, available_tickets, constants.SPLIT_ID, constants.SECTION, seat_from, seat_to, constants.CURRENCY_CODE,
+                available_tickets, available_tickets, constants.SPLIT_ID, section_name, seat_from, seat_to, constants.CURRENCY_CODE,
                 constants.LISTING_STATE_ID, constants.IS_CONSIGNMENT, datetime_now, datetime_now, constants.SELLER_ZONE_ID, constants.IS_GA,
                 price, constants.LISTING_FEE_CLASS_ID, price - 1, ticket_class_id, constants.IS_IN_HAND, constants.E_TICKET_TYPE_ID, datetime_six_months,
-                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, constants.CLIENT_APPLICATION_ID,
+                constants.IS_PICKUP_AVAILABLE, datetime_six_months, 20.0, constants.FACE_VALUE_CURRENCY_CODE, row_id, row_name, constants.CLIENT_APPLICATION_ID,
                 constants.FRAUD_STATE_ID, constants.SYSTEM_AUDIT, constants.APPLICATION_AUDIT, constants.INTERNAL_HOLD_STATE_ID, constants.IS_FROM_SH, constants.IS_PREUPLOADED
             ))
         
@@ -275,17 +290,14 @@ def fetch_section_and_row_data():
     
     data = db_helper_read_data(constants.FETCH_SECTION_AND_ROW_NAMES.format(constants.CONFIG_IG))
     if data == None:
-        return None, None
+        return None
 
-    section_names = defaultdict()
-    row_names = defaultdict()
+    row_and_section_data = defaultdict()    
 
     for row_id, row_name, section_id, section_name in data:
         if row_name == "Not Specified":
             row_name = None
 
-        row_names[row_id] = row_name
-        section_names[section_id] = section_name
-    
-    print(row_names)
-    return row_names, section_names
+        row_and_section_data[row_id] = (row_name, section_name)        
+        
+    return row_and_section_data

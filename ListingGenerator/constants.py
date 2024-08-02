@@ -8,11 +8,11 @@ SEAT_LEVEL_LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (
                          CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
                          ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
                             TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
-                         FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
+                         FaceValueCurrencyCode, RowID, Row, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
                         InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
                         OUTPUT Inserted.ListingID
 values \
-    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
 
 STANDING_ROW_LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
@@ -21,11 +21,11 @@ STANDING_ROW_LISTING_INSERT_QUERY_BULK = """SELECT NULL; INSERT INTO dbo.Listing
                          CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
                          ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
                             TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
-                         FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
+                         FaceValueCurrencyCode, RowID, Row, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
                         InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
                         OUTPUT Inserted.ListingID
 values \
-    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
 
 LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
@@ -34,10 +34,10 @@ LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, 
                          CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
                          ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
                          TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
-                         FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
+                         FaceValueCurrencyCode, RowID, Row, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
                         InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
 values \
-    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
 
 STANDING_ROW_LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (ListingTypeID, EventID, UserID, \
                          TicketLocationAddressID, GuaranteePaymentMethodID, \
@@ -46,14 +46,14 @@ STANDING_ROW_LISTING_INSERT_QUERY = "SET NOCOUNT ON; INSERT INTO dbo.Listing (Li
                          CurrencyCode, ListingStateID, IsConsignment, VersionStamp, \
                          ListingCreateDate, SellerZoneID, IsGeneralAdmission, DefaultCurrentPrice, ListingFeeClassID, SellerNetProceeds, \
                             TicketClassID, IsInHand, ETicketTypeId, ExpirationUpdateDate, IsPickupAvailable, ListingExpirationDate, FaceValue, \
-                         FaceValueCurrencyCode, RowID, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
+                         FaceValueCurrencyCode, RowID, Row, ClientApplicationID, FraudStateID, SystemUser_Audit, ApplicationName_Audit, \
                         InternalHoldStateID, IsFromStubHub, IsPreUploaded) \
 values \
-    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); SELECT SCOPE_IDENTITY() AS ID;"
 
 
 LISTING_TYPE_ID = 1
-EVENT_ID = 154820948
+EVENT_ID = 154249855
 USER_ID = '1723E175-99D8-4680-BDB5-7E52F8EDEC7A'
 TICKET_LOCATION_ADDRESS_ID = 72738
 GUARANTEE_PAYMENT_METHOD_ID = 151620
@@ -81,11 +81,11 @@ SECTION = '100'
 IS_PREUPLOADED = 1
 
 # For Section and Row information
-CONFIG_IG = 583471
+CONFIG_IG = 581459
 FETCH_SECTION_AND_ROW_NAMES = "SELECT sr.RowID, ctr.ContentBody as RowName, s.SectionID, cts.ContentBody as SectionName \
 FROM Venue.ConfigSectionRow csr \
 JOIN Venue.SectionRow sr on csr.RowID = sr.RowID \
-JOIN dbo.ContentText ctr on ctr.ContentID = sr.NameContentID and ctr.LCID = 2057 \
+JOIN dbo.ContentText ctr on ctr.ContentID = sr.NameContentID and (ctr.LCID = 2057 or ctr.LCID = 1033)\
 JOIN Venue.Section s on sr.SectionID = s.SectionID \
-JOIN dbo.ContentText cts on cts.ContentID = s.NameContentID and cts.LCID = 2057 \
+JOIN dbo.ContentText cts on cts.ContentID = s.NameContentID and (cts.LCID = 2057 or cts.LCID = 1033) \
 WHERE csr.ConfigID = {};"
