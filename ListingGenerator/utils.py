@@ -254,4 +254,38 @@ def insert_single_listing(available_tickets, price, ticket_class_id, row_id, sea
         return None
     finally:
         cursor.close()
-        cnxn.close() 
+        cnxn.close()
+
+def db_helper_read_data(query):
+    try:        
+        conn = pyodbc.connect(constants.QA_VGG_CONNECTION_STRING)
+        cursor = conn.cursor()            
+        cursor.execute(query)
+        data = cursor.fetchall()    
+        return data
+    except Exception as e:
+        print("Error:", e)
+        conn.rollback()
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
+def fetch_section_and_row_data():
+    
+    data = db_helper_read_data(constants.FETCH_SECTION_AND_ROW_NAMES.format(constants.CONFIG_IG))
+    if data == None:
+        return None, None
+
+    section_names = defaultdict()
+    row_names = defaultdict()
+
+    for row_id, row_name, section_id, section_name in data:
+        if row_name == "Not Specified":
+            row_name = None
+
+        row_names[row_id] = row_name
+        section_names[section_id] = section_name
+    
+    print(row_names)
+    return row_names, section_names

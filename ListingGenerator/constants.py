@@ -53,8 +53,8 @@ values \
 
 
 LISTING_TYPE_ID = 1
-EVENT_ID = 152864707
-USER_ID = '93E29545-A45D-4667-81AF-0DFE82A4CA4C'
+EVENT_ID = 154820948
+USER_ID = '1723E175-99D8-4680-BDB5-7E52F8EDEC7A'
 TICKET_LOCATION_ADDRESS_ID = 72738
 GUARANTEE_PAYMENT_METHOD_ID = 151620
 SELLER_AFFILIATE_ID = 0
@@ -79,3 +79,13 @@ IS_FROM_SH = 0
 # Adding a placeholder section since the mapping is done via the RowId on the listing
 SECTION = '100'
 IS_PREUPLOADED = 1
+
+# For Section and Row information
+CONFIG_IG = 583471
+FETCH_SECTION_AND_ROW_NAMES = "SELECT sr.RowID, ctr.ContentBody as RowName, s.SectionID, cts.ContentBody as SectionName \
+FROM Venue.ConfigSectionRow csr \
+JOIN Venue.SectionRow sr on csr.RowID = sr.RowID \
+JOIN dbo.ContentText ctr on ctr.ContentID = sr.NameContentID and ctr.LCID = 2057 \
+JOIN Venue.Section s on sr.SectionID = s.SectionID \
+JOIN dbo.ContentText cts on cts.ContentID = s.NameContentID and cts.LCID = 2057 \
+WHERE csr.ConfigID = {};"
