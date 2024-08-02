@@ -53,7 +53,7 @@ values \
 
 
 LISTING_TYPE_ID = 1
-EVENT_ID = 154249855
+EVENT_ID = 154820948
 USER_ID = '1723E175-99D8-4680-BDB5-7E52F8EDEC7A'
 TICKET_LOCATION_ADDRESS_ID = 72738
 GUARANTEE_PAYMENT_METHOD_ID = 151620
@@ -81,7 +81,7 @@ SECTION = '100'
 IS_PREUPLOADED = 1
 
 # For Section and Row information
-CONFIG_IG = 581459
+CONFIG_IG = 583471
 FETCH_SECTION_AND_ROW_NAMES = "SELECT sr.RowID, ctr.ContentBody as RowName, s.SectionID, cts.ContentBody as SectionName \
 FROM Venue.ConfigSectionRow csr \
 JOIN Venue.SectionRow sr on csr.RowID = sr.RowID \
