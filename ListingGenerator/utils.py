@@ -25,6 +25,7 @@ def get_sorted_manifest_tuple(filename):
                 standing_row = "_".join(formatted_line_list)                
                 standing_rows.add(standing_row)
             else:
+                # standing sections come from here. - TBD extend program to capture.
                 unaccounted_counter += 1
 
     print("Seat level counter: ", seat_lvl_counter)

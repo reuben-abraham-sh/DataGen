@@ -53,7 +53,7 @@ values \
 
 
 LISTING_TYPE_ID = 1
-EVENT_ID = 154820948
+EVENT_ID = 155085969
 USER_ID = '1723E175-99D8-4680-BDB5-7E52F8EDEC7A'
 TICKET_LOCATION_ADDRESS_ID = 72738
 GUARANTEE_PAYMENT_METHOD_ID = 151620
@@ -89,3 +89,17 @@ JOIN dbo.ContentText ctr on ctr.ContentID = sr.NameContentID and (ctr.LCID = 205
 JOIN Venue.Section s on sr.SectionID = s.SectionID \
 JOIN dbo.ContentText cts on cts.ContentID = s.NameContentID and (cts.LCID = 2057 or cts.LCID = 1033) \
 WHERE csr.ConfigID = {};"
+
+'''
+TO BE DONE: the manifest will give us ticketclass_sectionid - we can use the section id to find the rowids in these standin sections and then insert in bulk
+extend this program to do this
+'''
+FETCH_DATA_FOR_STANDING_ROWS = "SELECT s.SectionID, sr.RowID, ctr.ContentBody as RowName, ct.ContentBody as SectionName, tccsr.TicketClassID \
+from Venue.Section s \
+join dbo.ContentText ct on ct.ContentID = s.NameContentID and LCID = 2057 \
+join Venue.SectionRow sr on sr.SectionID = s.SectionID \
+join dbo.ContentText ctr on ctr.ContentID = sr.NameContentID and ctr.LCID = 2057 \
+join Venue.ConfigSectionRow csr on csr.RowID = sr.RowID \
+join Venue.TicketClassConfigSectionRow tccsr on tccsr.ConfigSectionRowID = csr.ConfigSectionRowID \
+where csr.ConfigID = 585086 and ctr.ContentBody = '1' \
+and s.SectionID in ();"
